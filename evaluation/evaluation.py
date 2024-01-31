@@ -38,9 +38,9 @@ class Evaluation(object):
         self.batch_size = batch_size
         self.config = config
 
-        # load the pretrained FCN
-        self.fcn = load_pretrained_FCN(subset_dataset_name).to(self.device)
-        self.fcn.eval()
+        # # load the pretrained FCN
+        # self.fcn = load_pretrained_FCN(subset_dataset_name).to(self.device)
+        # self.fcn.eval()
 
         # load the numpy matrix of the test samples
         dataset_importer = DatasetImporterUCR(subset_dataset_name, data_scaling=True)

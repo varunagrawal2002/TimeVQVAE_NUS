@@ -67,20 +67,20 @@ def train_stage2(config: dict,
     print('saving the model...')
     save_model({'maskgit': train_exp.maskgit}, id=dataset_name)
 
-    # test
-    # print('evaluating...')
-    # input_length = train_data_loader.dataset.X.shape[-1]
-    # n_classes = len(np.unique(train_data_loader.dataset.Y))
-    # evaluation = Evaluation(dataset_name, gpu_device_idx, config)
-    # _, _, x_gen = evaluation.sample(min(10, config['dataset']['batch_sizes']['stage2']),
-    #                                  input_length,
-    #                                  n_classes,
-    #                                  'conditional',class_index=1)
-    # generated_data_path = 'C:/Users/divya/Desktop/TimeVQVAE/Resul/checking.tsv'
-    # num_time_series, time_series_length, num_features = x_gen.shape
-    # x_gen_2d = x_gen.reshape(num_time_series, -1)
-    # print(x_gen_2d.shape)
-    # np.savetxt(generated_data_path, x_gen_2d, delimiter='\t', fmt='%f')
+    #test
+    print('evaluating...')
+    input_length = train_data_loader.dataset.X.shape[-1]
+    n_classes = len(np.unique(train_data_loader.dataset.Y))
+    evaluation = Evaluation(dataset_name, gpu_device_idx, config)
+    _, _, x_gen = evaluation.sample(min(10, config['dataset']['batch_sizes']['stage2']),
+                                     input_length,
+                                     n_classes,
+                                     'conditional',class_index=0)
+    generated_data_path = 'C:/Users/divya/Desktop/TimeVQVAE/Resul/generated_person_0.tsv'
+    num_time_series, time_series_length, num_features = x_gen.shape
+    x_gen_2d = x_gen.reshape(num_time_series, -1)
+    print(x_gen_2d.shape)
+    np.savetxt(generated_data_path, x_gen_2d, delimiter='\t', fmt='%f')
     # #x_gen_np = x_gen.numpy()  # Convert PyTorch tensor to NumPy array
     # #x_gen_flattened = x_gen_np.reshape(x_gen_np.shape[0], -1)
     # #np.savetxt(generated_data_path, x_gen_flattened, delimiter='\t', fmt='%f')
