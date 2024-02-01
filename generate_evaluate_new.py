@@ -55,19 +55,19 @@ def eva(config: dict,
                                     input_length,
                                     n_classes,
                                     'conditional',class_index=4)
-    # generated_data_path = 'C:/Users/divya/Desktop/TimeVQVAE/Resul/generated_data_Class_4_.tsv'
-    # num_time_series, time_series_length, num_features = x_gen.shape
-    # x_gen_2d = x_gen.reshape(num_time_series, -1)
-    # print(x_gen_2d.shape)
-    # np.savetxt(generated_data_path, x_gen_2d, delimiter='\t', fmt='%f')
-    z_test, z_gen = evaluation.compute_z(x_gen)
-    fid, (z_test, z_gen) = evaluation.fid_score(z_test, z_gen)
-    IS_mean, IS_std = evaluation.inception_score(x_gen)
-    wandb.log({'FID': fid, 'IS_mean': IS_mean, 'IS_std': IS_std})
+    generated_data_path = 'C:/Users/divya/Desktop/TimeVQVAE/Resul/generated_data_Class_4_.tsv'
+    num_time_series, time_series_length, num_features = x_gen.shape
+    x_gen_2d = x_gen.reshape(num_time_series, -1)
+    print(x_gen_2d.shape)
+    np.savetxt(generated_data_path, x_gen_2d, delimiter='\t', fmt='%f')
+    # z_test, z_gen = evaluation.compute_z(x_gen)
+    # fid, (z_test, z_gen) = evaluation.fid_score(z_test, z_gen)
+    # IS_mean, IS_std = evaluation.inception_score(x_gen)
+    # wandb.log({'FID': fid, 'IS_mean': IS_mean, 'IS_std': IS_std})
 
     evaluation.log_visual_inspection(min(200, evaluation.X_test.shape[0]), x_gen)
-    evaluation.log_pca(min(1000, evaluation.X_test.shape[0]), x_gen, z_test, z_gen)
-    evaluation.log_tsne(min(1000, evaluation.X_test.shape[0]), x_gen, z_test, z_gen)
+    # evaluation.log_pca(min(1000, evaluation.X_test.shape[0]), x_gen, z_test, z_gen)
+    # evaluation.log_tsne(min(1000, evaluation.X_test.shape[0]), x_gen, z_test, z_gen)
     wandb.finish()
 
 

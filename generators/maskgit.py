@@ -256,14 +256,17 @@ class MaskGIT(nn.Module):
                    s_l: torch.Tensor,
                    unknown_number_in_the_beginning_l,
                    class_condition: Union[torch.Tensor, None],
+                   class_condition_1: Union[torch.Tensor, None],
                    guidance_scale: float,
                    gamma: Callable,
                    device):
         for t in range(self.T):
-            logits_l = self.transformer_l(s_l, class_condition=class_condition)  # (b n codebook_size) == (b n K)
+            logits_l = self.transformer_l(s_l, class_condition=class_condition)
+            logits_l_1 = self.transformer_l(s_l, class_condition=class_condition_1)# (b n codebook_size) == (b n K)
             if isinstance(class_condition, torch.Tensor):
                 logits_l_null = self.transformer_l(s_l, class_condition=None)
-                logits_l = logits_l_null + guidance_scale * (logits_l - logits_l_null)
+                #logits_l = logits_l_null + guidance_scale * (logits_l - logits_l_null)
+                logits_l = logits_l_null + guidance_scale * (0.7 * logits_l_1 + (1 - 0.7) * logits_l_null)
             sampled_ids = torch.distributions.categorical.Categorical(logits=logits_l).sample()  # (b n)
             unknown_map = (s_l == self.mask_token_ids['LF'])  # which tokens need to be sampled; (b n)
             sampled_ids = torch.where(unknown_map, sampled_ids, s_l)  # keep the previously-sampled tokens; (b n)
@@ -300,14 +303,17 @@ class MaskGIT(nn.Module):
                     s_h: torch.Tensor,
                     unknown_number_in_the_beginning_h,
                     class_condition: Union[torch.Tensor, None],
+                    class_condition_1: Union[torch.Tensor, None],
                     guidance_scale: float,
                     gamma: Callable,
                     device):
         for t in range(self.T):
-            logits_h = self.transformer_h(s_l, s_h, class_condition=class_condition)  # (b m codebook_size) == (b m K)
+            logits_h = self.transformer_h(s_l, s_h, class_condition=class_condition)
+            logits_h_1 = self.transformer_l(s_l,s_h, class_condition=class_condition_1)  # (b m codebook_size) == (b m K)
             if isinstance(class_condition, torch.Tensor) and (guidance_scale > 1):
                 logits_h_null = self.transformer_h(s_l, s_h, class_condition=None)
-                logits_h = logits_h_null + guidance_scale * (logits_h - logits_h_null)
+                #logits_h = logits_h_null + guidance_scale * (logits_h - logits_h_null)
+                logits_h = logits_h_null + guidance_scale * (0.7 * logits_h_1 + (1 - 0.7) * logits_h_null)
             sampled_ids = torch.distributions.categorical.Categorical(logits=logits_h).sample()  # (b m)
             unknown_map = (s_h == self.mask_token_ids['HF'])  # which tokens need to be sampled; (b m)
             sampled_ids = torch.where(unknown_map, sampled_ids, s_h)  # keep the previously-sampled tokens; (b m)
@@ -344,10 +350,12 @@ class MaskGIT(nn.Module):
         unknown_number_in_the_beginning_l = torch.sum(s_l == self.mask_token_ids['LF'], dim=-1)  # (b,)
         unknown_number_in_the_beginning_h = torch.sum(s_h == self.mask_token_ids['HF'], dim=-1)  # (b,)
         gamma = self.gamma_func(mode)
-        class_condition = repeat(torch.Tensor([class_index]).int().to(device), 'i -> b i', b=num) if class_index != None else None  # (b 1)
+        class_index_1 = 0 ###########################################################
+        class_condition = repeat(torch.Tensor([class_index]).int().to(device), 'i -> b i', b=num) if class_index != None else None
+        class_condition_1 = repeat(torch.Tensor([class_index_1]).int().to(device), 'i -> b i', b=num) if class_index != None else None  # (b 1)
 
-        s_l = self.first_pass(s_l, unknown_number_in_the_beginning_l, class_condition, guidance_scale, gamma, device)
-        s_h = self.second_pass(s_l, s_h, unknown_number_in_the_beginning_h, class_condition, guidance_scale, gamma, device)
+        s_l = self.first_pass(s_l, unknown_number_in_the_beginning_l, class_condition,class_condition_1, guidance_scale, gamma, device)
+        s_h = self.second_pass(s_l, s_h, unknown_number_in_the_beginning_h, class_condition,class_condition_1, guidance_scale, gamma, device)
         return s_l, s_h
 
     def decode_token_ind_to_timeseries(self, s: torch.Tensor, frequency: str, return_representations: bool = False):
